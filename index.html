@@ -1,49 +1,350 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-	<title>Новый проект</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-	
-	<!-- Made with Construct, the game and app creator :: https://www.construct.net -->
-	<meta name="generator" content="Scirra Construct">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Кликер с Капибарой 🐾</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          keyframes: {
+            pulseBoost: { 
+              '0%,100%': { opacity: 1, boxShadow: '0 0 20px #60a5fa' }, 
+              '50%': { opacity: 0.8, boxShadow: '0 0 40px #3b82f6' } 
+            },
+            float: { 
+              '0%,100%': { transform: 'translateY(0)' }, 
+              '50%': { transform: 'translateY(-8px)' } 
+            }
+          },
+          animation: {
+            pulseBoost: 'pulseBoost 1s infinite',
+            float: 'float 3s ease-in-out infinite'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+    }
+    .capybara-btn {
+      border-radius: 50%;
+      object-fit: contain;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      transition: transform 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-sky-500 via-emerald-500 to-teal-600 p-4 pt-6 text-white">
 
+  <!-- Основной контейнер с сеткой: игра + топ -->
+  <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Левая панель: игра -->
+    <div class="lg:col-span-2">
+      <div class="max-w-md mx-auto text-center">
+        <div id="greeting" class="mb-3 text-xl font-semibold"></div>
+        <div class="mb-6">
+          <div id="score" class="text-5xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500">
+            0
+          </div>
+          <div id="boostIndicator" class="mt-2 h-1.5 w-48 mx-auto rounded-full bg-white/30 hidden">
+            <div id="boostBar" class="h-full rounded-full bg-cyan-300 w-0 transition-all duration-100"></div>
+          </div>
+        </div>
 
+        <div class="relative flex justify-center mb-6">
+          <img 
+            id="capybaraBtn"
+            src="https://static.vecteezy.com/system/resources/previews/057/531/498/large_2x/a-detailed-image-of-a-capybara-shows-its-fur-and-features-isolated-on-transparent-background-free-png.png"
+            alt="Кликай по капибаре!"
+            class="capybara-btn w-32 h-32 animate-float"
+          />
+        </div>
 
-	<link rel="manifest" href="appmanifest.json">
-	<link rel="apple-touch-icon" sizes="128x128" href="icons/Иконка-128.png">
-	<link rel="apple-touch-icon" sizes="256x256" href="icons/Иконка-256.png">
-	<link rel="apple-touch-icon" sizes="512x512" href="icons/Иконка-512.png">
-	<link rel="icon" type="image/png" href="icons/Иконка-512.png">
+        <div class="flex flex-col sm:flex-row gap-3 mb-6">
+          <button id="boostBtn"
+            class="flex-1 py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl shadow-md opacity-60 cursor-not-allowed text-sm">
+            Активировать Буст (x2) — 50 очков
+          </button>
 
-	<link rel="stylesheet" href="style.css">
+          <button id="exportBtn"
+            class="flex-1 py-3 px-4 bg-white/20 hover:bg-white/30 text-white font-medium rounded-xl transition">
+            📥 Скачать отчёт
+          </button>
+        </div>
 
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-5 border border-white/20">
+          <h3 class="text-xl font-bold mb-3">🏆 Достижения</h3>
+          <div id="achievements" class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm"></div>
+        </div>
+      </div>
+    </div>
 
+    <!-- Правая панель: Топ игроков -->
+    <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-5 border border-white/20 h-fit">
+      <h3 class="text-xl font-bold mb-4 text-center">🏅 Топ-5 игроков</h3>
+      <div id="leaderboard" class="space-y-3">
+        <!-- Топ будет здесь -->
+      </div>
+      <p class="text-xs text-white/60 mt-4 text-center">Только на этом устройстве</p>
+    </div>
+  </div>
 
-</head> 
- 
-<body>
+  <script>
+    const DATA_KEY = "capybaraClickerData";
+    const LEADERBOARD_KEY = "capybaraLeaderboard";
 
-	
+    const ACHIEVEMENTS = [
+      { id: '10', points: 10, title: "Первый клик", emoji: "🐾" },
+      { id: '25', points: 25, title: "Друг капибар", emoji: "🦝" },
+      { id: '50', points: 50, title: "Буст-мейстер", emoji: "⚡" },
+      { id: '100', points: 100, title: "Капиба-легенда", emoji: "👑" },
+      { id: '200', points: 200, title: "Царь болота", emoji: "🌿" }
+    ];
 
-<script>
-if (location.protocol.substr(0, 4) === "file")
-{
-	alert("Web exports won't work until you upload them. (When running on the file: protocol, browsers block many features from working for security reasons.)");
-}
-</script>
-	
-	<noscript>
-		<div id="notSupportedWrap">
-			<h2 id="notSupportedTitle">This content requires JavaScript</h2>
-			<p class="notSupportedMessage">JavaScript appears to be disabled. Please enable it to view this content.</p>
-		</div>
-	</noscript>
-	<script src="scripts/modernjscheck.js"></script>
-	<script src="scripts/supportcheck.js"></script>
-	<script src="scripts/offlineclient.js" type="module"></script>
-	<script src="scripts/main.js" type="module"></script>
-	<script src="scripts/register-sw.js" type="module"></script>
+    const SIZES = [64, 80, 96, 112, 128, 144];
 
-</body> 
+    let state = {
+      playerName: "",
+      score: 0,
+      boostActive: false,
+      boostEndTime: 0,
+      unlockedAchievements: new Set()
+    };
+
+    // DOM
+    const greetingEl = document.getElementById('greeting');
+    const scoreEl = document.getElementById('score');
+    const capybaraBtn = document.getElementById('capybaraBtn');
+    const boostBtn = document.getElementById('boostBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const boostIndicator = document.getElementById('boostIndicator');
+    const boostBar = document.getElementById('boostBar');
+    const achievementsEl = document.getElementById('achievements');
+    const leaderboardEl = document.getElementById('leaderboard');
+
+    // === Работа с данными ===
+    function saveGameState() {
+      try {
+        localStorage.setItem(DATA_KEY, JSON.stringify({
+          playerName: state.playerName,
+          score: state.score,
+          boostActive: state.boostActive,
+          boostEndTime: state.boostEndTime,
+          unlockedAchievements: [...state.unlockedAchievements]
+        }));
+      } catch (e) { console.warn(e); }
+    }
+
+    function loadGameState() {
+      try {
+        const data = JSON.parse(localStorage.getItem(DATA_KEY) || '{}');
+        state.playerName = data.playerName || "";
+        state.score = data.score || 0;
+        state.boostActive = data.boostActive || false;
+        state.boostEndTime = data.boostEndTime || 0;
+        state.unlockedAchievements = new Set(data.unlockedAchievements || []);
+      } catch (e) { console.warn("Load error:", e); }
+    }
+
+    function getLeaderboard() {
+      try {
+        return JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveToLeaderboard() {
+      const leaderboard = getLeaderboard();
+      const existing = leaderboard.find(item => item.name === state.playerName);
+      
+      if (existing) {
+        if (state.score > existing.score) {
+          existing.score = state.score;
+          existing.date = new Date().toISOString();
+        }
+      } else {
+        leaderboard.push({
+          name: state.playerName,
+          score: state.score,
+          date: new Date().toISOString()
+        });
+      }
+
+      // Сортируем по убыванию и оставляем топ-5
+      leaderboard.sort((a, b) => b.score - a.score);
+      const top5 = leaderboard.slice(0, 5);
+      localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(top5));
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      const leaderboard = getLeaderboard();
+      leaderboardEl.innerHTML = '';
+      
+      if (leaderboard.length === 0) {
+        leaderboardEl.innerHTML = '<p class="text-center text-white/70">Пока нет рекордов</p>';
+        return;
+      }
+
+      leaderboard.forEach((item, index) => {
+        const isCurrent = item.name === state.playerName;
+        const medal = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'][index] || '🏆';
+        const div = document.createElement('div');
+        div.className = `p-3 rounded-lg flex justify-between items-center ${
+          isCurrent ? 'bg-amber-500/20 border border-amber-400/50' : 'bg-white/10'
+        }`;
+        div.innerHTML = `
+          <div class="font-medium">${medal} ${item.name}</div>
+          <div class="font-bold text-amber-300">${item.score}</div>
+        `;
+        leaderboardEl.appendChild(div);
+      });
+    }
+
+    // === Имя игрока ===
+    function askForName() {
+      if (state.playerName) return;
+      let name = prompt("👋 Привет! Как тебя зовут?", "Игрок");
+      if (!name || name.trim() === "") name = "Аноним";
+      state.playerName = name.trim();
+      saveGameState();
+      updateUI();
+      renderLeaderboard();
+    }
+
+    // === UI ===
+    function updateUI() {
+      greetingEl.textContent = state.playerName ? `Привет, ${state.playerName}!` : "";
+      scoreEl.textContent = state.score;
+
+      const sizeIndex = Math.min(Math.floor(state.score / 25), SIZES.length - 1);
+      const size = SIZES[sizeIndex];
+      capybaraBtn.style.width = `${size}px`;
+      capybaraBtn.style.height = `${size}px`;
+
+      // Достижения
+      achievementsEl.innerHTML = '';
+      ACHIEVEMENTS.forEach(ach => {
+        const unlocked = state.unlockedAchievements.has(ach.id);
+        const el = document.createElement('div');
+        el.className = `p-2 rounded-lg ${unlocked ? 'bg-amber-500/20 border border-amber-400/50' : 'bg-white/10'}`;
+        el.innerHTML = `
+          <div class="text-lg">${unlocked ? ach.emoji : '🔒'}</div>
+          <div class="font-medium mt-1">${ach.title}</div>
+          <div class="opacity-80 mt-1">${unlocked ? '✅' : ach.points}</div>
+        `;
+        achievementsEl.appendChild(el);
+      });
+
+      // Буст
+      const canBoost = state.score >= 50 && !state.boostActive;
+      boostBtn.disabled = !canBoost;
+      boostBtn.className = `flex-1 py-3 px-4 text-white font-semibold rounded-xl shadow-md text-sm ${
+        canBoost 
+          ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 cursor-pointer opacity-100' 
+          : 'bg-gradient-to-r from-amber-500 to-orange-600 opacity-60 cursor-not-allowed'
+      }`;
+    }
+
+    // === Буст ===
+    function activateBoost() {
+      if (state.score < 50 || state.boostActive) return;
+      state.score -= 50;
+      state.boostActive = true;
+      state.boostEndTime = Date.now() + 10000;
+      boostIndicator.classList.remove('hidden');
+      boostBar.style.width = '100%';
+      capybaraBtn.style.boxShadow = '0 0 20px #60a5fa';
+      updateUI();
+      startBoostTimer();
+    }
+
+    function startBoostTimer() {
+      const tick = () => {
+        const now = Date.now();
+        if (now >= state.boostEndTime) {
+          state.boostActive = false;
+          boostIndicator.classList.add('hidden');
+          capybaraBtn.style.boxShadow = '0 8px 20px rgba(0,0,0,0.2)';
+          updateUI();
+          return;
+        }
+        const progress = (state.boostEndTime - now) / 10000;
+        boostBar.style.width = `${progress * 100}%`;
+        setTimeout(tick, 100);
+      };
+      tick();
+    }
+
+    // === Клик ===
+    function handleClick() {
+      capybaraBtn.style.transform = 'scale(0.94)';
+      setTimeout(() => capybaraBtn.style.transform = '', 100);
+
+      const add = state.boostActive ? 2 : 1;
+      state.score += add;
+
+      ACHIEVEMENTS.forEach(ach => {
+        if (state.score >= ach.points && !state.unlockedAchievements.has(ach.id)) {
+          state.unlockedAchievements.add(ach.id);
+        }
+      });
+
+      updateUI();
+      saveGameState();
+      saveToLeaderboard(); // обновляем топ после каждого клика (можно сделать реже)
+    }
+
+    // === Экспорт ===
+    function exportToTxt() {
+      const date = new Date().toLocaleString('ru-RU');
+      let content = `Отчёт игрока "${state.playerName}"\n`;
+      content += `Дата: ${date}\n`;
+      content += `Очки: ${state.score}\n`;
+      content += `Буст активен: ${state.boostActive ? 'Да' : 'Нет'}\n\n`;
+      content += `Достижения:\n`;
+      ACHIEVEMENTS.forEach(ach => {
+        const unlocked = state.unlockedAchievements.has(ach.id);
+        content += `- ${ach.title}: ${unlocked ? '✅' : '❌'}\n`;
+      });
+      content += `\nСпасибо за игру! 🐾`;
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `кликер_отчёт_${state.playerName.replaceAll(' ', '_')}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // === Инициализация ===
+    loadGameState();
+    updateUI();
+    renderLeaderboard();
+
+    if (!state.playerName) {
+      setTimeout(askForName, 300);
+    }
+    if (state.boostActive) startBoostTimer();
+
+    capybaraBtn.addEventListener('click', handleClick);
+    boostBtn.addEventListener('click', activateBoost);
+    exportBtn.addEventListener('click', exportToTxt);
+  </script>
+</body>
 </html>
