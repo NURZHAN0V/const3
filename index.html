@@ -170,6 +170,16 @@
           </div>
         </div>
 
+        <!-- Скины -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-5 border border-white/20">
+          <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
+            🎨 Скины
+          </h3>
+          <div id="skins" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <!-- Скины будут здесь -->
+          </div>
+        </div>
+
         <!-- Достижения -->
         <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-5 border border-white/20">
           <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
@@ -249,6 +259,81 @@
       { id: 'autoClicker3', name: "Автокликер III", emoji: "🚀", baseCost: 1000, costMultiplier: 3, description: "+25 очков/сек" }
     ];
 
+    const SKINS = [
+      { 
+        id: 'default', 
+        name: "Классический", 
+        emoji: "🐾", 
+        cost: 0, 
+        image: "https://static.vecteezy.com/system/resources/previews/057/531/498/large_2x/a-detailed-image-of-a-capybara-shows-its-fur-and-features-isolated-on-transparent-background-free-png.png",
+        filter: "none",
+        unlocked: true 
+      },
+      { 
+        id: 'golden', 
+        name: "Золотой", 
+        emoji: "✨", 
+        cost: 100, 
+        image: "https://static.vecteezy.com/system/resources/previews/057/531/498/large_2x/a-detailed-image-of-a-capybara-shows-its-fur-and-features-isolated-on-transparent-background-free-png.png",
+        filter: "brightness(1.3) sepia(1) saturate(1.5) hue-rotate(-10deg)",
+        unlocked: false 
+      },
+      { 
+        id: 'royal', 
+        name: "Королевский", 
+        emoji: "👑", 
+        cost: 250, 
+        image: "https://static.vecteezy.com/system/resources/previews/057/531/498/large_2x/a-detailed-image-of-a-capybara-shows-its-fur-and-features-isolated-on-transparent-background-free-png.png",
+        filter: "brightness(1.1) saturate(1.3) contrast(1.2)",
+        unlocked: false 
+      },
+      { 
+        id: 'fire', 
+        name: "Огненный", 
+        emoji: "🔥", 
+        cost: 500, 
+        image: "https://static.vecteezy.com/system/resources/previews/057/531/498/large_2x/a-detailed-image-of-a-capybara-shows-its-fur-and-features-isolated-on-transparent-background-free-png.png",
+        filter: "brightness(1.2) saturate(1.5) hue-rotate(-30deg) contrast(1.3)",
+        unlocked: false 
+      },
+      { 
+        id: 'ice', 
+        name: "Ледяной", 
+        emoji: "❄️", 
+        cost: 500, 
+        image: "https://static.vecteezy.com/system/resources/previews/057/531/498/large_2x/a-detailed-image-of-a-capybara-shows-its-fur-and-features-isolated-on-transparent-background-free-png.png",
+        filter: "brightness(1.1) saturate(0.8) hue-rotate(180deg) contrast(1.1)",
+        unlocked: false 
+      },
+      { 
+        id: 'rainbow', 
+        name: "Радужный", 
+        emoji: "🌈", 
+        cost: 1000, 
+        image: "https://static.vecteezy.com/system/resources/previews/057/531/498/large_2x/a-detailed-image-of-a-capybara-shows-its-fur-and-features-isolated-on-transparent-background-free-png.png",
+        filter: "brightness(1.1) saturate(2) contrast(1.2)",
+        unlocked: false 
+      },
+      { 
+        id: 'shadow', 
+        name: "Теневой", 
+        emoji: "🌑", 
+        cost: 1500, 
+        image: "https://static.vecteezy.com/system/resources/previews/057/531/498/large_2x/a-detailed-image-of-a-capybara-shows-its-fur-and-features-isolated-on-transparent-background-free-png.png",
+        filter: "brightness(0.7) contrast(1.3) saturate(0.5)",
+        unlocked: false 
+      },
+      { 
+        id: 'legendary', 
+        name: "Легендарный", 
+        emoji: "💎", 
+        cost: 3000, 
+        image: "https://static.vecteezy.com/system/resources/previews/057/531/498/large_2x/a-detailed-image-of-a-capybara-shows-its-fur-and-features-isolated-on-transparent-background-free-png.png",
+        filter: "brightness(1.2) saturate(1.8) contrast(1.4) drop-shadow(0 0 10px rgba(255,215,0,0.8))",
+        unlocked: false 
+      }
+    ];
+
     const SIZES = [64, 80, 96, 112, 128, 144, 160, 176];
 
     let state = {
@@ -265,6 +350,8 @@
         autoClicker2: 0,
         autoClicker3: 0
       },
+      unlockedSkins: new Set(['default']), // По умолчанию открыт базовый скин
+      selectedSkin: 'default',
       totalClicks: 0,
       maxCombo: 0,
       currentCombo: 0,
@@ -292,6 +379,7 @@
     const achievementsEl = document.getElementById('achievements');
     const leaderboardEl = document.getElementById('leaderboard');
     const upgradesEl = document.getElementById('upgrades');
+    const skinsEl = document.getElementById('skins');
     const comboIndicatorEl = document.getElementById('comboIndicator');
     const comboMultiplierEl = document.getElementById('comboMultiplier');
     const totalClicksEl = document.getElementById('totalClicks');
@@ -316,6 +404,8 @@
           boostEndTime: state.boostEndTime,
           unlockedAchievements: [...state.unlockedAchievements],
           upgrades: state.upgrades,
+          unlockedSkins: [...state.unlockedSkins],
+          selectedSkin: state.selectedSkin,
           totalClicks: state.totalClicks,
           maxCombo: state.maxCombo,
           playTime: state.playTime,
@@ -343,6 +433,8 @@
           autoClicker2: 0,
           autoClicker3: 0
         };
+        state.unlockedSkins = new Set(data.unlockedSkins || ['default']);
+        state.selectedSkin = data.selectedSkin || 'default';
         state.totalClicks = data.totalClicks || 0;
         state.maxCombo = data.maxCombo || 0;
         state.playTime = data.playTime || 0;
@@ -601,6 +693,12 @@
         upgradesEl.appendChild(el);
       });
 
+      // Скины
+      renderSkins();
+
+      // Обновляем фильтр скина (с учетом буста)
+      updateSkinFilter();
+
       // Буст
       const canBoost = state.score >= 50 && !state.boostActive;
       boostBtn.disabled = !canBoost;
@@ -623,6 +721,110 @@
       saveGameState();
     }
 
+    // === Работа со скинами ===
+    function renderSkins() {
+      skinsEl.innerHTML = '';
+      SKINS.forEach(skin => {
+        const isUnlocked = state.unlockedSkins.has(skin.id);
+        const isSelected = state.selectedSkin === skin.id;
+        const canBuy = !isUnlocked && state.score >= skin.cost;
+        
+        const el = document.createElement('button');
+        el.className = `relative p-3 sm:p-4 rounded-xl text-center transition-all duration-200 ${
+          isSelected 
+            ? 'bg-gradient-to-br from-amber-500/30 to-orange-500/30 border-2 border-amber-400 shadow-lg' 
+            : isUnlocked 
+              ? 'bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40' 
+              : canBuy
+                ? 'bg-white/5 hover:bg-white/10 border border-white/10 hover:border-green-400/50'
+                : 'bg-white/5 border border-white/10 opacity-50 cursor-not-allowed'
+        }`;
+        el.disabled = !isUnlocked && !canBuy;
+        
+        el.innerHTML = `
+          ${isSelected ? '<div class="absolute -top-2 -right-2 bg-amber-500 rounded-full px-2 py-0.5 text-xs font-bold">✓</div>' : ''}
+          <div class="text-3xl sm:text-4xl mb-2" style="filter: ${skin.filter}">${skin.emoji}</div>
+          <div class="font-semibold text-sm sm:text-base mb-1">${skin.name}</div>
+          ${isUnlocked 
+            ? '<div class="text-xs text-green-300 font-medium">Разблокирован</div>' 
+            : `<div class="text-xs sm:text-sm font-bold text-amber-300">${skin.cost.toLocaleString('ru-RU')} очков</div>`
+          }
+        `;
+        
+        if (isUnlocked) {
+          el.onclick = () => selectSkin(skin.id);
+        } else if (canBuy) {
+          el.onclick = () => buySkin(skin.id);
+        }
+        
+        skinsEl.appendChild(el);
+      });
+    }
+
+    function buySkin(skinId) {
+      const skin = SKINS.find(s => s.id === skinId);
+      if (!skin || state.unlockedSkins.has(skinId) || state.score < skin.cost) return;
+      
+      state.score -= skin.cost;
+      state.unlockedSkins.add(skinId);
+      state.selectedSkin = skinId;
+      
+      showSkinNotification(skin, 'куплен');
+      applySkin(skinId);
+      updateUI();
+      saveGameState();
+    }
+
+    function selectSkin(skinId) {
+      if (!state.unlockedSkins.has(skinId)) return;
+      
+      state.selectedSkin = skinId;
+      applySkin(skinId);
+      updateUI();
+      saveGameState();
+    }
+
+    function applySkin(skinId) {
+      const skin = SKINS.find(s => s.id === skinId);
+      if (!skin) return;
+      
+      capybaraBtn.src = skin.image;
+      updateSkinFilter();
+    }
+
+    function updateSkinFilter() {
+      const skin = SKINS.find(s => s.id === state.selectedSkin);
+      if (!skin) return;
+      
+      if (state.boostActive) {
+        // Комбинируем фильтр скина с эффектом буста
+        capybaraBtn.style.filter = `${skin.filter} brightness(1.2) drop-shadow(0 0 20px #60a5fa)`;
+      } else {
+        capybaraBtn.style.filter = skin.filter;
+      }
+    }
+
+    function showSkinNotification(skin, action) {
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-3 rounded-xl shadow-2xl z-50 animate-bounceIn';
+      notification.innerHTML = `
+        <div class="text-center">
+          <div class="text-3xl mb-1" style="filter: ${skin.filter}">${skin.emoji}</div>
+          <div class="font-bold text-lg">Скин "${skin.name}" ${action}!</div>
+        </div>
+      `;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.5s';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            document.body.removeChild(notification);
+          }
+        }, 500);
+      }, 2500);
+    }
+
     // === Буст ===
     function activateBoost() {
       if (state.score < 50 || state.boostActive) return;
@@ -631,7 +833,7 @@
       state.boostEndTime = Date.now() + 10000;
       boostIndicator.classList.remove('hidden');
       boostBar.style.width = '100%';
-      capybaraBtn.style.filter = 'brightness(1.2) drop-shadow(0 0 20px #60a5fa)';
+      updateSkinFilter();
       updateUI();
       startBoostTimer();
       saveGameState();
@@ -643,7 +845,7 @@
         if (now >= state.boostEndTime) {
           state.boostActive = false;
           boostIndicator.classList.add('hidden');
-          capybaraBtn.style.filter = '';
+          updateSkinFilter();
           updateUI();
           saveGameState();
           return;
@@ -788,6 +990,15 @@
         content += `${upgrade.emoji} ${upgrade.name}: Уровень ${level}\n`;
       });
       content += `\n═══════════════════════════════════════\n`;
+      content += `            СКИНЫ\n`;
+      content += `═══════════════════════════════════════\n`;
+      const selectedSkin = SKINS.find(s => s.id === state.selectedSkin);
+      content += `🎨 Выбранный скин: ${selectedSkin ? selectedSkin.name : 'Неизвестно'}\n\n`;
+      SKINS.forEach(skin => {
+        const unlocked = state.unlockedSkins.has(skin.id);
+        content += `${unlocked ? '✅' : '❌'} ${skin.emoji} ${skin.name}${unlocked && skin.id === state.selectedSkin ? ' (активен)' : ''}${!unlocked ? ` (${skin.cost} очков)` : ''}\n`;
+      });
+      content += `\n═══════════════════════════════════════\n`;
       content += `    Спасибо за игру! 🐾\n`;
       content += `═══════════════════════════════════════\n`;
 
@@ -824,13 +1035,17 @@
       // Проверка и восстановление буста
       if (state.boostActive && state.boostEndTime && Date.now() < state.boostEndTime) {
         boostIndicator.classList.remove('hidden');
-        capybaraBtn.style.filter = 'brightness(1.2) drop-shadow(0 0 20px #60a5fa)';
+        updateSkinFilter();
         startBoostTimer();
       } else if (state.boostActive) {
         // Буст истек, сбрасываем
         state.boostActive = false;
         state.boostEndTime = 0;
+        updateSkinFilter();
         saveGameState();
+      } else {
+        // Применяем скин без буста
+        updateSkinFilter();
       }
 
       // События
