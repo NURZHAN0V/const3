@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Кликер с Капибарой 🐾</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
@@ -18,85 +18,213 @@
             float: { 
               '0%,100%': { transform: 'translateY(0)' }, 
               '50%': { transform: 'translateY(-8px)' } 
+            },
+            shake: {
+              '0%,100%': { transform: 'translateX(0)' },
+              '25%': { transform: 'translateX(-5px)' },
+              '75%': { transform: 'translateX(5px)' }
+            },
+            bounceIn: {
+              '0%': { transform: 'scale(0)', opacity: 0 },
+              '50%': { transform: 'scale(1.1)' },
+              '100%': { transform: 'scale(1)', opacity: 1 }
+            },
+            glow: {
+              '0%,100%': { filter: 'drop-shadow(0 0 5px rgba(255,215,0,0.5))' },
+              '50%': { filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.8))' }
             }
           },
           animation: {
             pulseBoost: 'pulseBoost 1s infinite',
-            float: 'float 3s ease-in-out infinite'
+            float: 'float 3s ease-in-out infinite',
+            shake: 'shake 0.3s ease-in-out',
+            bounceIn: 'bounceIn 0.5s ease-out',
+            glow: 'glow 2s ease-in-out infinite'
           }
         }
       }
     }
   </script>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: 'Poppins', sans-serif;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     .capybara-btn {
       border-radius: 50%;
       object-fit: contain;
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      transition: transform 0.15s ease;
+      transition: transform 0.15s ease, filter 0.3s ease;
       cursor: pointer;
       user-select: none;
       -webkit-user-drag: none;
     }
+    .particle {
+      position: absolute;
+      pointer-events: none;
+      font-weight: bold;
+      font-size: 1.5rem;
+      animation: particleFloat 1s ease-out forwards;
+      z-index: 1000;
+    }
+    @keyframes particleFloat {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-80px) scale(1.2);
+      }
+    }
+    .combo-indicator {
+      animation: bounceIn 0.3s ease-out;
+    }
+    .progress-bar {
+      transition: width 0.3s ease-out;
+    }
+    .stat-card {
+      backdrop-filter: blur(10px);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    @media (max-width: 640px) {
+      .capybara-btn {
+        max-width: 120px;
+        max-height: 120px;
+      }
+    }
   </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-sky-500 via-emerald-500 to-teal-600 p-4 pt-6 text-white">
+<body class="min-h-screen bg-gradient-to-br from-sky-500 via-emerald-500 to-teal-600 p-3 sm:p-4 pt-4 sm:pt-6 text-white">
 
-  <!-- Основной контейнер с сеткой: игра + топ -->
-  <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-    
-    <!-- Левая панель: игра -->
-    <div class="lg:col-span-2">
-      <div class="max-w-md mx-auto text-center">
-        <div id="greeting" class="mb-3 text-xl font-semibold"></div>
-        <div class="mb-6">
-          <div id="score" class="text-5xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500">
-            0
-          </div>
-          <div id="boostIndicator" class="mt-2 h-1.5 w-48 mx-auto rounded-full bg-white/30 hidden">
-            <div id="boostBar" class="h-full rounded-full bg-cyan-300 w-0 transition-all duration-100"></div>
-          </div>
-        </div>
-
-        <div class="relative flex justify-center mb-6">
-          <img 
-            id="capybaraBtn"
-            src="https://static.vecteezy.com/system/resources/previews/057/531/498/large_2x/a-detailed-image-of-a-capybara-shows-its-fur-and-features-isolated-on-transparent-background-free-png.png"
-            alt="Кликай по капибаре!"
-            class="capybara-btn w-32 h-32 animate-float"
-          />
-        </div>
-
-        <div class="flex flex-col sm:flex-row gap-3 mb-6">
-          <button id="boostBtn"
-            class="flex-1 py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl shadow-md opacity-60 cursor-not-allowed text-sm">
-            Активировать Буст (x2) — 50 очков
-          </button>
-
-          <button id="exportBtn"
-            class="flex-1 py-3 px-4 bg-white/20 hover:bg-white/30 text-white font-medium rounded-xl transition">
-            📥 Скачать отчёт
-          </button>
-        </div>
-
-        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-5 border border-white/20">
-          <h3 class="text-xl font-bold mb-3">🏆 Достижения</h3>
-          <div id="achievements" class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm"></div>
-        </div>
+  <!-- Основной контейнер -->
+  <div class="max-w-7xl mx-auto">
+    <!-- Заголовок и статистика -->
+    <div class="text-center mb-4 sm:mb-6">
+      <h1 class="text-3xl sm:text-4xl font-black mb-2 bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400">
+        🐾 Кликер с Капибарой 🐾
+      </h1>
+      <div id="greeting" class="text-lg sm:text-xl font-semibold mb-2"></div>
+      <div id="comboIndicator" class="hidden text-2xl font-bold text-yellow-300 combo-indicator mb-2">
+        🔥 Комбо x<span id="comboMultiplier">1</span>!
       </div>
     </div>
 
-    <!-- Правая панель: Топ игроков -->
-    <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-5 border border-white/20 h-fit">
-      <h3 class="text-xl font-bold mb-4 text-center">🏅 Топ-5 игроков</h3>
-      <div id="leaderboard" class="space-y-3">
-        <!-- Топ будет здесь -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      
+      <!-- Левая панель: Основная игра -->
+      <div class="lg:col-span-2 space-y-4 sm:space-y-6">
+        <!-- Счет и уровень -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-6 border border-white/20 stat-card">
+          <div class="text-center">
+            <div class="flex items-center justify-center gap-3 mb-2">
+              <div id="score" class="text-4xl sm:text-5xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500">
+                0
+              </div>
+              <div id="levelBadge" class="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-sm sm:text-base font-bold">
+                Lv. <span id="level">1</span>
+              </div>
+            </div>
+            <div id="levelProgressContainer" class="mt-3 h-2 w-full max-w-xs mx-auto rounded-full bg-white/20">
+              <div id="levelProgress" class="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 progress-bar" style="width: 0%"></div>
+            </div>
+            <div id="boostIndicator" class="mt-3 h-2 w-full max-w-xs mx-auto rounded-full bg-white/30 hidden">
+              <div id="boostBar" class="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-400 progress-bar" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Капибара для клика -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-white/20 stat-card text-center">
+          <div class="relative flex justify-center items-center mb-4">
+            <div id="particleContainer" class="absolute inset-0 pointer-events-none"></div>
+            <img 
+              id="capybaraBtn"
+              src="https://static.vecteezy.com/system/resources/previews/057/531/498/large_2x/a-detailed-image-of-a-capybara-shows-its-fur-and-features-isolated-on-transparent-background-free-png.png"
+              alt="Кликай по капибаре!"
+              class="capybara-btn w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 animate-float"
+            />
+          </div>
+          <div class="text-sm sm:text-base text-white/80">
+            <div>Очков за клик: <span id="pointsPerClick" class="font-bold text-amber-300">1</span></div>
+            <div class="mt-1">Автоклик: <span id="autoClickRate" class="font-bold text-green-300">0</span> очков/сек</div>
+          </div>
+        </div>
+
+        <!-- Улучшения -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-5 border border-white/20">
+          <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
+            ⚡ Улучшения
+          </h3>
+          <div id="upgrades" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Улучшения будут здесь -->
+          </div>
+        </div>
+
+        <!-- Достижения -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-5 border border-white/20">
+          <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
+            🏆 Достижения
+          </h3>
+          <div id="achievements" class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs sm:text-sm"></div>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button id="boostBtn"
+            class="flex-1 py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl opacity-60 cursor-not-allowed text-sm sm:text-base transition-all duration-200">
+            ⚡ Буст x2 — 50 очков
+          </button>
+          <button id="exportBtn"
+            class="flex-1 py-3 px-4 bg-white/20 hover:bg-white/30 text-white font-medium rounded-xl transition-all duration-200 text-sm sm:text-base">
+            📥 Скачать отчёт
+          </button>
+        </div>
       </div>
-      <p class="text-xs text-white/60 mt-4 text-center">Только на этом устройстве</p>
+
+      <!-- Правая панель: Статистика и Топ -->
+      <div class="space-y-4 sm:space-y-6">
+        <!-- Статистика -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-5 border border-white/20 stat-card">
+          <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-center">📊 Статистика</h3>
+          <div class="space-y-2 sm:space-y-3 text-sm sm:text-base">
+            <div class="flex justify-between items-center">
+              <span class="text-white/80">Всего кликов:</span>
+              <span id="totalClicks" class="font-bold text-amber-300">0</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-white/80">Макс. комбо:</span>
+              <span id="maxCombo" class="font-bold text-purple-300">0</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-white/80">Время игры:</span>
+              <span id="playTime" class="font-bold text-green-300">0:00</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-white/80">Автокликеров:</span>
+              <span id="autoClickersCount" class="font-bold text-blue-300">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Топ игроков -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-5 border border-white/20 stat-card">
+          <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-center">🏅 Топ-5 игроков</h3>
+          <div id="leaderboard" class="space-y-2 sm:space-y-3">
+            <!-- Топ будет здесь -->
+          </div>
+          <p class="text-xs text-white/60 mt-3 sm:mt-4 text-center">Только на этом устройстве</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -109,22 +237,53 @@
       { id: '25', points: 25, title: "Друг капибар", emoji: "🦝" },
       { id: '50', points: 50, title: "Буст-мейстер", emoji: "⚡" },
       { id: '100', points: 100, title: "Капиба-легенда", emoji: "👑" },
-      { id: '200', points: 200, title: "Царь болота", emoji: "🌿" }
+      { id: '200', points: 200, title: "Царь болота", emoji: "🌿" },
+      { id: '500', points: 500, title: "Мастер кликов", emoji: "💎" },
+      { id: '1000', points: 1000, title: "Легенда кликера", emoji: "🌟" }
     ];
 
-    const SIZES = [64, 80, 96, 112, 128, 144];
+    const UPGRADES = [
+      { id: 'clickPower', name: "Сила клика", emoji: "💪", baseCost: 10, costMultiplier: 1.5, description: "+1 очко за клик" },
+      { id: 'autoClicker1', name: "Автокликер I", emoji: "🤖", baseCost: 50, costMultiplier: 2, description: "+1 очко/сек" },
+      { id: 'autoClicker2', name: "Автокликер II", emoji: "⚙️", baseCost: 200, costMultiplier: 2.5, description: "+5 очков/сек" },
+      { id: 'autoClicker3', name: "Автокликер III", emoji: "🚀", baseCost: 1000, costMultiplier: 3, description: "+25 очков/сек" }
+    ];
+
+    const SIZES = [64, 80, 96, 112, 128, 144, 160, 176];
 
     let state = {
       playerName: "",
       score: 0,
+      level: 1,
+      levelProgress: 0,
       boostActive: false,
       boostEndTime: 0,
-      unlockedAchievements: new Set()
+      unlockedAchievements: new Set(),
+      upgrades: {
+        clickPower: 0,
+        autoClicker1: 0,
+        autoClicker2: 0,
+        autoClicker3: 0
+      },
+      totalClicks: 0,
+      maxCombo: 0,
+      currentCombo: 0,
+      comboTimeout: null,
+      comboEndTime: 0,
+      playTime: 0,
+      startTime: Date.now(),
+      lastSaveTime: Date.now()
     };
 
-    // DOM
+    // DOM элементы
     const greetingEl = document.getElementById('greeting');
     const scoreEl = document.getElementById('score');
+    const levelEl = document.getElementById('level');
+    const levelBadgeEl = document.getElementById('levelBadge');
+    const levelProgressEl = document.getElementById('levelProgress');
+    const levelProgressContainerEl = document.getElementById('levelProgressContainer');
+    const pointsPerClickEl = document.getElementById('pointsPerClick');
+    const autoClickRateEl = document.getElementById('autoClickRate');
     const capybaraBtn = document.getElementById('capybaraBtn');
     const boostBtn = document.getElementById('boostBtn');
     const exportBtn = document.getElementById('exportBtn');
@@ -132,61 +291,110 @@
     const boostBar = document.getElementById('boostBar');
     const achievementsEl = document.getElementById('achievements');
     const leaderboardEl = document.getElementById('leaderboard');
+    const upgradesEl = document.getElementById('upgrades');
+    const comboIndicatorEl = document.getElementById('comboIndicator');
+    const comboMultiplierEl = document.getElementById('comboMultiplier');
+    const totalClicksEl = document.getElementById('totalClicks');
+    const maxComboEl = document.getElementById('maxCombo');
+    const playTimeEl = document.getElementById('playTime');
+    const autoClickersCountEl = document.getElementById('autoClickersCount');
+    const particleContainerEl = document.getElementById('particleContainer');
 
     // === Работа с данными ===
     function saveGameState() {
       try {
+        const now = Date.now();
+        state.playTime += (now - state.lastSaveTime) / 1000;
+        state.lastSaveTime = now;
+        
         localStorage.setItem(DATA_KEY, JSON.stringify({
           playerName: state.playerName,
           score: state.score,
+          level: state.level,
+          levelProgress: state.levelProgress,
           boostActive: state.boostActive,
           boostEndTime: state.boostEndTime,
-          unlockedAchievements: [...state.unlockedAchievements]
+          unlockedAchievements: [...state.unlockedAchievements],
+          upgrades: state.upgrades,
+          totalClicks: state.totalClicks,
+          maxCombo: state.maxCombo,
+          playTime: state.playTime,
+          startTime: state.startTime
         }));
-      } catch (e) { console.warn(e); }
+      } catch (e) { 
+        console.warn("Ошибка сохранения:", e); 
+      }
     }
 
     function loadGameState() {
       try {
         const data = JSON.parse(localStorage.getItem(DATA_KEY) || '{}');
+        const now = Date.now();
         state.playerName = data.playerName || "";
         state.score = data.score || 0;
+        state.level = data.level || 1;
+        state.levelProgress = data.levelProgress || 0;
         state.boostActive = data.boostActive || false;
         state.boostEndTime = data.boostEndTime || 0;
         state.unlockedAchievements = new Set(data.unlockedAchievements || []);
-      } catch (e) { console.warn("Load error:", e); }
+        state.upgrades = data.upgrades || {
+          clickPower: 0,
+          autoClicker1: 0,
+          autoClicker2: 0,
+          autoClicker3: 0
+        };
+        state.totalClicks = data.totalClicks || 0;
+        state.maxCombo = data.maxCombo || 0;
+        state.playTime = data.playTime || 0;
+        state.startTime = data.startTime || now;
+        state.lastSaveTime = now;
+
+        // Проверяем, истек ли буст
+        if (state.boostActive && state.boostEndTime && now >= state.boostEndTime) {
+          state.boostActive = false;
+          state.boostEndTime = 0;
+        }
+      } catch (e) { 
+        console.warn("Ошибка загрузки:", e); 
+      }
     }
 
     function getLeaderboard() {
       try {
         return JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]');
       } catch (e) {
+        console.warn("Ошибка загрузки лидерборда:", e);
         return [];
       }
     }
 
     function saveToLeaderboard() {
-      const leaderboard = getLeaderboard();
-      const existing = leaderboard.find(item => item.name === state.playerName);
-      
-      if (existing) {
-        if (state.score > existing.score) {
-          existing.score = state.score;
-          existing.date = new Date().toISOString();
+      if (!state.playerName) return;
+      try {
+        const leaderboard = getLeaderboard();
+        const existing = leaderboard.find(item => item.name === state.playerName);
+        
+        if (existing) {
+          if (state.score > existing.score) {
+            existing.score = state.score;
+            existing.date = new Date().toISOString();
+          }
+        } else {
+          leaderboard.push({
+            name: state.playerName,
+            score: state.score,
+            date: new Date().toISOString()
+          });
         }
-      } else {
-        leaderboard.push({
-          name: state.playerName,
-          score: state.score,
-          date: new Date().toISOString()
-        });
-      }
 
-      // Сортируем по убыванию и оставляем топ-5
-      leaderboard.sort((a, b) => b.score - a.score);
-      const top5 = leaderboard.slice(0, 5);
-      localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(top5));
-      renderLeaderboard();
+        // Сортируем по убыванию и оставляем топ-5
+        leaderboard.sort((a, b) => b.score - a.score);
+        const top5 = leaderboard.slice(0, 5);
+        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(top5));
+        renderLeaderboard();
+      } catch (e) {
+        console.warn("Ошибка сохранения в лидерборд:", e);
+      }
     }
 
     function renderLeaderboard() {
@@ -194,7 +402,7 @@
       leaderboardEl.innerHTML = '';
       
       if (leaderboard.length === 0) {
-        leaderboardEl.innerHTML = '<p class="text-center text-white/70">Пока нет рекордов</p>';
+        leaderboardEl.innerHTML = '<p class="text-center text-white/70 text-sm">Пока нет рекордов</p>';
         return;
       }
 
@@ -202,15 +410,103 @@
         const isCurrent = item.name === state.playerName;
         const medal = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'][index] || '🏆';
         const div = document.createElement('div');
-        div.className = `p-3 rounded-lg flex justify-between items-center ${
+        div.className = `p-2 sm:p-3 rounded-lg flex justify-between items-center text-sm ${
           isCurrent ? 'bg-amber-500/20 border border-amber-400/50' : 'bg-white/10'
         }`;
         div.innerHTML = `
-          <div class="font-medium">${medal} ${item.name}</div>
-          <div class="font-bold text-amber-300">${item.score}</div>
+          <div class="font-medium truncate">${medal} ${item.name}</div>
+          <div class="font-bold text-amber-300 ml-2">${item.score}</div>
         `;
         leaderboardEl.appendChild(div);
       });
+    }
+
+    // === Система уровней ===
+    function calculateLevel() {
+      const baseXP = 100;
+      let newLevel = 1;
+      let totalXPNeeded = 0;
+      
+      // Вычисляем текущий уровень на основе общего прогресса
+      while (state.levelProgress >= totalXPNeeded + baseXP * Math.pow(1.5, newLevel - 1)) {
+        totalXPNeeded += baseXP * Math.pow(1.5, newLevel - 1);
+        newLevel++;
+      }
+      
+      if (newLevel > state.level) {
+        state.level = newLevel;
+        showLevelUpAnimation();
+      }
+      
+      // Расчет прогресса для текущего уровня
+      let prevLevelTotalXP = 0;
+      for (let i = 1; i < state.level; i++) {
+        prevLevelTotalXP += baseXP * Math.pow(1.5, i - 1);
+      }
+      
+      const currentLevelXP = baseXP * Math.pow(1.5, state.level - 1);
+      const progressInLevel = state.levelProgress - prevLevelTotalXP;
+      const progressPercent = Math.max(0, Math.min((progressInLevel / currentLevelXP) * 100, 100));
+      
+      levelProgressEl.style.width = progressPercent + '%';
+    }
+
+    function showLevelUpAnimation() {
+      levelBadgeEl.classList.add('animate-glow');
+      setTimeout(() => levelBadgeEl.classList.remove('animate-glow'), 2000);
+    }
+
+    // === Эффекты частиц ===
+    function createParticle(x, y, points) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.textContent = `+${points}`;
+      particle.style.left = x + 'px';
+      particle.style.top = y + 'px';
+      particle.style.color = state.boostActive ? '#60a5fa' : '#fbbf24';
+      particleContainerEl.appendChild(particle);
+      
+      setTimeout(() => {
+        if (particle.parentNode) {
+          particle.parentNode.removeChild(particle);
+        }
+      }, 1000);
+    }
+
+    // === Комбо-система ===
+    function updateCombo() {
+      const now = Date.now();
+      if (now - state.comboEndTime > 2000) {
+        state.currentCombo = 0;
+        comboIndicatorEl.classList.add('hidden');
+      }
+      
+      state.currentCombo++;
+      if (state.currentCombo > state.maxCombo) {
+        state.maxCombo = state.currentCombo;
+      }
+      
+      state.comboEndTime = now;
+      
+      if (state.currentCombo >= 5) {
+        comboIndicatorEl.classList.remove('hidden');
+        const multiplier = Math.min(Math.floor(state.currentCombo / 5), 5);
+        comboMultiplierEl.textContent = multiplier;
+      }
+      
+      if (state.comboTimeout) {
+        clearTimeout(state.comboTimeout);
+      }
+      
+      state.comboTimeout = setTimeout(() => {
+        state.currentCombo = 0;
+        comboIndicatorEl.classList.add('hidden');
+      }, 2000);
+    }
+
+    function getComboMultiplier() {
+      if (state.currentCombo < 5) return 1;
+      return Math.min(Math.floor(state.currentCombo / 5), 5);
     }
 
     // === Имя игрока ===
@@ -224,38 +520,107 @@
       renderLeaderboard();
     }
 
+    // === Расчет значений ===
+    function getPointsPerClick() {
+      return 1 + state.upgrades.clickPower;
+    }
+
+    function getAutoClickRate() {
+      return state.upgrades.autoClicker1 * 1 + 
+             state.upgrades.autoClicker2 * 5 + 
+             state.upgrades.autoClicker3 * 25;
+    }
+
+    function getUpgradeCost(upgradeId) {
+      const upgrade = UPGRADES.find(u => u.id === upgradeId);
+      if (!upgrade) return Infinity;
+      const level = state.upgrades[upgradeId] || 0;
+      return Math.floor(upgrade.baseCost * Math.pow(upgrade.costMultiplier, level));
+    }
+
     // === UI ===
     function updateUI() {
       greetingEl.textContent = state.playerName ? `Привет, ${state.playerName}!` : "";
-      scoreEl.textContent = state.score;
+      scoreEl.textContent = state.score.toLocaleString('ru-RU');
+      levelEl.textContent = state.level;
+      pointsPerClickEl.textContent = getPointsPerClick();
+      autoClickRateEl.textContent = getAutoClickRate();
+      totalClicksEl.textContent = state.totalClicks.toLocaleString('ru-RU');
+      maxComboEl.textContent = state.maxCombo;
+      
+      const autoClickersTotal = state.upgrades.autoClicker1 + state.upgrades.autoClicker2 + state.upgrades.autoClicker3;
+      autoClickersCountEl.textContent = autoClickersTotal;
 
-      const sizeIndex = Math.min(Math.floor(state.score / 25), SIZES.length - 1);
+      // Размер капибары
+      const sizeIndex = Math.min(Math.floor(state.level / 2), SIZES.length - 1);
       const size = SIZES[sizeIndex];
       capybaraBtn.style.width = `${size}px`;
       capybaraBtn.style.height = `${size}px`;
+
+      // Прогресс уровня
+      calculateLevel();
 
       // Достижения
       achievementsEl.innerHTML = '';
       ACHIEVEMENTS.forEach(ach => {
         const unlocked = state.unlockedAchievements.has(ach.id);
         const el = document.createElement('div');
-        el.className = `p-2 rounded-lg ${unlocked ? 'bg-amber-500/20 border border-amber-400/50' : 'bg-white/10'}`;
+        el.className = `p-2 sm:p-3 rounded-lg text-center ${unlocked ? 'bg-amber-500/20 border border-amber-400/50' : 'bg-white/10'}`;
         el.innerHTML = `
-          <div class="text-lg">${unlocked ? ach.emoji : '🔒'}</div>
-          <div class="font-medium mt-1">${ach.title}</div>
-          <div class="opacity-80 mt-1">${unlocked ? '✅' : ach.points}</div>
+          <div class="text-xl sm:text-2xl mb-1">${unlocked ? ach.emoji : '🔒'}</div>
+          <div class="font-medium text-xs sm:text-sm">${ach.title}</div>
+          <div class="opacity-80 text-xs mt-1">${unlocked ? '✅' : ach.points}</div>
         `;
         achievementsEl.appendChild(el);
+      });
+
+      // Улучшения
+      upgradesEl.innerHTML = '';
+      UPGRADES.forEach(upgrade => {
+        const level = state.upgrades[upgrade.id] || 0;
+        const cost = getUpgradeCost(upgrade.id);
+        const canAfford = state.score >= cost;
+        
+        const el = document.createElement('button');
+        el.className = `p-3 sm:p-4 rounded-xl text-left transition-all duration-200 ${
+          canAfford 
+            ? 'bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 cursor-pointer' 
+            : 'bg-white/5 border border-white/10 opacity-60 cursor-not-allowed'
+        }`;
+        el.disabled = !canAfford;
+        el.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-lg sm:text-xl">${upgrade.emoji}</div>
+            <div class="text-xs sm:text-sm font-semibold text-amber-300">Ур. ${level}</div>
+          </div>
+          <div class="font-semibold text-sm sm:text-base mb-1">${upgrade.name}</div>
+          <div class="text-xs text-white/70 mb-2">${upgrade.description}</div>
+          <div class="text-sm font-bold text-green-300">${cost.toLocaleString('ru-RU')} очков</div>
+        `;
+        el.onclick = () => buyUpgrade(upgrade.id);
+        upgradesEl.appendChild(el);
       });
 
       // Буст
       const canBoost = state.score >= 50 && !state.boostActive;
       boostBtn.disabled = !canBoost;
-      boostBtn.className = `flex-1 py-3 px-4 text-white font-semibold rounded-xl shadow-md text-sm ${
+      boostBtn.className = `flex-1 py-3 px-4 text-white font-semibold rounded-xl shadow-lg text-sm sm:text-base transition-all duration-200 ${
         canBoost 
-          ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 cursor-pointer opacity-100' 
+          ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 hover:shadow-xl cursor-pointer opacity-100' 
           : 'bg-gradient-to-r from-amber-500 to-orange-600 opacity-60 cursor-not-allowed'
       }`;
+    }
+
+    // === Покупка улучшений ===
+    function buyUpgrade(upgradeId) {
+      const cost = getUpgradeCost(upgradeId);
+      if (state.score < cost) return;
+      
+      state.score -= cost;
+      state.upgrades[upgradeId] = (state.upgrades[upgradeId] || 0) + 1;
+      
+      updateUI();
+      saveGameState();
     }
 
     // === Буст ===
@@ -266,9 +631,10 @@
       state.boostEndTime = Date.now() + 10000;
       boostIndicator.classList.remove('hidden');
       boostBar.style.width = '100%';
-      capybaraBtn.style.boxShadow = '0 0 20px #60a5fa';
+      capybaraBtn.style.filter = 'brightness(1.2) drop-shadow(0 0 20px #60a5fa)';
       updateUI();
       startBoostTimer();
+      saveGameState();
     }
 
     function startBoostTimer() {
@@ -277,8 +643,9 @@
         if (now >= state.boostEndTime) {
           state.boostActive = false;
           boostIndicator.classList.add('hidden');
-          capybaraBtn.style.boxShadow = '0 8px 20px rgba(0,0,0,0.2)';
+          capybaraBtn.style.filter = '';
           updateUI();
+          saveGameState();
           return;
         }
         const progress = (state.boostEndTime - now) / 10000;
@@ -289,62 +656,203 @@
     }
 
     // === Клик ===
-    function handleClick() {
-      capybaraBtn.style.transform = 'scale(0.94)';
-      setTimeout(() => capybaraBtn.style.transform = '', 100);
+    function handleClick(event) {
+      // Анимация клика
+      capybaraBtn.style.transform = 'scale(0.92)';
+      setTimeout(() => capybaraBtn.style.transform = '', 150);
 
-      const add = state.boostActive ? 2 : 1;
-      state.score += add;
+      // Расчет очков
+      const basePoints = getPointsPerClick();
+      const boostMultiplier = state.boostActive ? 2 : 1;
+      const comboMultiplier = getComboMultiplier();
+      const totalPoints = Math.floor(basePoints * boostMultiplier * comboMultiplier);
 
+      // Добавление очков
+      state.score += totalPoints;
+      state.totalClicks++;
+      state.levelProgress += totalPoints;
+
+      // Обновление комбо
+      updateCombo();
+
+      // Создание частицы
+      const rect = capybaraBtn.getBoundingClientRect();
+      const x = rect.left + rect.width / 2 + (Math.random() - 0.5) * 40;
+      const y = rect.top + rect.height / 2 + (Math.random() - 0.5) * 40;
+      createParticle(x, y, totalPoints);
+
+      // Проверка достижений
       ACHIEVEMENTS.forEach(ach => {
         if (state.score >= ach.points && !state.unlockedAchievements.has(ach.id)) {
           state.unlockedAchievements.add(ach.id);
+          showAchievementNotification(ach);
         }
       });
 
       updateUI();
       saveGameState();
-      saveToLeaderboard(); // обновляем топ после каждого клика (можно сделать реже)
+      
+      // Сохранение в лидерборд реже (каждые 10 кликов)
+      if (state.totalClicks % 10 === 0) {
+        saveToLeaderboard();
+      }
+    }
+
+    function showAchievementNotification(achievement) {
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-xl shadow-2xl z-50 animate-bounceIn';
+      notification.innerHTML = `
+        <div class="text-center">
+          <div class="text-3xl mb-1">${achievement.emoji}</div>
+          <div class="font-bold text-lg">Достижение разблокировано!</div>
+          <div class="text-sm opacity-90">${achievement.title}</div>
+        </div>
+      `;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.5s';
+        setTimeout(() => document.body.removeChild(notification), 500);
+      }, 3000);
+    }
+
+    // === Автокликер ===
+    function startAutoClicker() {
+      setInterval(() => {
+        const rate = getAutoClickRate();
+        if (rate > 0) {
+          const basePoints = getPointsPerClick();
+          const boostMultiplier = state.boostActive ? 2 : 1;
+          const points = Math.floor(basePoints * rate * boostMultiplier);
+          
+          if (points > 0) {
+            state.score += points;
+            state.levelProgress += points;
+            
+            // Проверка достижений
+            ACHIEVEMENTS.forEach(ach => {
+              if (state.score >= ach.points && !state.unlockedAchievements.has(ach.id)) {
+                state.unlockedAchievements.add(ach.id);
+              }
+            });
+            
+            updateUI();
+          }
+        }
+      }, 1000);
+    }
+
+    // === Обновление времени игры ===
+    function updatePlayTime() {
+      const now = Date.now();
+      state.playTime += (now - state.lastSaveTime) / 1000;
+      state.lastSaveTime = now;
+      
+      const minutes = Math.floor(state.playTime / 60);
+      const seconds = Math.floor(state.playTime % 60);
+      playTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      
+      setTimeout(updatePlayTime, 1000);
     }
 
     // === Экспорт ===
     function exportToTxt() {
       const date = new Date().toLocaleString('ru-RU');
-      let content = `Отчёт игрока "${state.playerName}"\n`;
-      content += `Дата: ${date}\n`;
-      content += `Очки: ${state.score}\n`;
-      content += `Буст активен: ${state.boostActive ? 'Да' : 'Нет'}\n\n`;
-      content += `Достижения:\n`;
+      const minutes = Math.floor(state.playTime / 60);
+      const seconds = Math.floor(state.playTime % 60);
+      
+      let content = `═══════════════════════════════════════\n`;
+      content += `    ОТЧЁТ ИГРОКА "${state.playerName}"\n`;
+      content += `═══════════════════════════════════════\n\n`;
+      content += `📅 Дата: ${date}\n`;
+      content += `💯 Очки: ${state.score.toLocaleString('ru-RU')}\n`;
+      content += `⭐ Уровень: ${state.level}\n`;
+      content += `⚡ Буст активен: ${state.boostActive ? 'Да' : 'Нет'}\n`;
+      content += `👆 Всего кликов: ${state.totalClicks.toLocaleString('ru-RU')}\n`;
+      content += `🔥 Максимальное комбо: ${state.maxCombo}\n`;
+      content += `⏱️  Время игры: ${minutes}:${seconds.toString().padStart(2, '0')}\n`;
+      content += `💪 Сила клика: ${getPointsPerClick()} очков\n`;
+      content += `🤖 Автоклик: ${getAutoClickRate()} очков/сек\n\n`;
+      content += `═══════════════════════════════════════\n`;
+      content += `         ДОСТИЖЕНИЯ\n`;
+      content += `═══════════════════════════════════════\n`;
       ACHIEVEMENTS.forEach(ach => {
         const unlocked = state.unlockedAchievements.has(ach.id);
-        content += `- ${ach.title}: ${unlocked ? '✅' : '❌'}\n`;
+        content += `${unlocked ? '✅' : '❌'} ${ach.emoji} ${ach.title} (${ach.points} очков)\n`;
       });
-      content += `\nСпасибо за игру! 🐾`;
+      content += `\n═══════════════════════════════════════\n`;
+      content += `         УЛУЧШЕНИЯ\n`;
+      content += `═══════════════════════════════════════\n`;
+      UPGRADES.forEach(upgrade => {
+        const level = state.upgrades[upgrade.id] || 0;
+        content += `${upgrade.emoji} ${upgrade.name}: Уровень ${level}\n`;
+      });
+      content += `\n═══════════════════════════════════════\n`;
+      content += `    Спасибо за игру! 🐾\n`;
+      content += `═══════════════════════════════════════\n`;
 
-      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `кликер_отчёт_${state.playerName.replaceAll(' ', '_')}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      try {
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        // Исправление: используем replace с регулярным выражением вместо replaceAll
+        const filename = `кликер_отчёт_${state.playerName.replace(/ /g, '_')}.txt`;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.error("Ошибка экспорта:", e);
+        alert("Не удалось создать отчёт. Попробуйте ещё раз.");
+      }
     }
 
     // === Инициализация ===
-    loadGameState();
-    updateUI();
-    renderLeaderboard();
+    function init() {
+      loadGameState();
+      updateUI();
+      renderLeaderboard();
+      startAutoClicker();
+      updatePlayTime();
 
-    if (!state.playerName) {
-      setTimeout(askForName, 300);
+      if (!state.playerName) {
+        setTimeout(askForName, 300);
+      }
+      
+      // Проверка и восстановление буста
+      if (state.boostActive && state.boostEndTime && Date.now() < state.boostEndTime) {
+        boostIndicator.classList.remove('hidden');
+        capybaraBtn.style.filter = 'brightness(1.2) drop-shadow(0 0 20px #60a5fa)';
+        startBoostTimer();
+      } else if (state.boostActive) {
+        // Буст истек, сбрасываем
+        state.boostActive = false;
+        state.boostEndTime = 0;
+        saveGameState();
+      }
+
+      // События
+      capybaraBtn.addEventListener('click', handleClick);
+      boostBtn.addEventListener('click', activateBoost);
+      exportBtn.addEventListener('click', exportToTxt);
+
+      // Автосохранение каждые 5 секунд
+      setInterval(() => {
+        saveGameState();
+        saveToLeaderboard();
+      }, 5000);
+
+      // Сохранение при закрытии страницы
+      window.addEventListener('beforeunload', () => {
+        saveGameState();
+        saveToLeaderboard();
+      });
     }
-    if (state.boostActive) startBoostTimer();
 
-    capybaraBtn.addEventListener('click', handleClick);
-    boostBtn.addEventListener('click', activateBoost);
-    exportBtn.addEventListener('click', exportToTxt);
+    // Запуск игры
+    init();
   </script>
 </body>
 </html>
